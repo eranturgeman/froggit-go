@@ -909,7 +909,7 @@ func (client *BitbucketCloudClient) GetModifiedFiles(ctx context.Context, owner,
 		// As there is no `topic` set it will be treated as `refAfter...refBefore` actually.
 		Spec:    refAfter + ".." + refBefore,
 		Renames: true,
-		Merge:   true,
+		Merge:   true, //nolint:staticcheck
 	}
 
 	fileNamesSet := datastructures.MakeSet[string]()
