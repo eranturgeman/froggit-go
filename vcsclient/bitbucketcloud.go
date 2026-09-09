@@ -411,13 +411,15 @@ func (client *BitbucketCloudClient) UpdatePullRequest(ctx context.Context, owner
 		ID:                strconv.Itoa(prId),
 		States:            []string{*vcsutils.MapPullRequestState(&state)},
 	}
-	if state == vcsutils.Closed {
-		// Bitbucket Cloud's generic PR update endpoint doesn't accept a state change; closing a PR
-		// requires the dedicated decline endpoint.
-		_, err = bitbucketClient.Repositories.PullRequests.Decline(options)
+	if _, err = bitbucketClient.Repositories.PullRequests.Update(options); err != nil {
 		return err
 	}
-	_, err = bitbucketClient.Repositories.PullRequests.Update(options)
+	if state == vcsutils.Closed {
+		// Bitbucket Cloud's generic PR update endpoint doesn't accept a state change, and its decline
+		// endpoint ignores metadata fields in its own request body - so applying both the metadata
+		// update and the state change requires both calls.
+		_, err = bitbucketClient.Repositories.PullRequests.Decline(options)
+	}
 	return err
 }
 
